@@ -1,6 +1,4 @@
 import re
-import os
-
 
 def filter_data(file):
     """Filter the necessary keys and event data from the raw data file
@@ -12,9 +10,8 @@ def filter_data(file):
         string: file uri of the filtered data
     """
 
-    current_directory = os.path.join(os.getcwd(), "code", "playground")
-    input_file_name = os.path.join(current_directory, "test_data.jsonl")
-    output_file_name = os.path.join(current_directory, "filtered_test_data.jsonl")
+    input_file_name = file
+    output_file_name = "data/filtered_data.jsonl"
 
     # input_file_name = file
 

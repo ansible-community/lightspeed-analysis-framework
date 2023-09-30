@@ -18,6 +18,8 @@ def segregate_users_from_group(file):
 
     with open(input_file_name, "r") as input_file:
         for line in input_file:
+
+            # match the "userId" pattern and segregate the data based on unique user IDs
             user_id_match = re.search(r'"userId":"([^"]+)"', line)
 
             if user_id_match:
@@ -28,11 +30,11 @@ def segregate_users_from_group(file):
             else:
                 unmatched_lines.append(line)
 
-    output_folder = "user_files"
+    output_folder = "data/user_files"
     os.makedirs(output_folder, exist_ok=True)
 
     for user_id, lines in user_lines.items():
-        output_file_name = os.path.join(output_folder, f"{user_id}_raw_file.jsonl")
+        output_file_name = os.path.join(output_folder, f"{user_id}_filtered_file.jsonl")
         with open(output_file_name, "w") as output_file:
             for line in lines:
                 output_file.write(line)
