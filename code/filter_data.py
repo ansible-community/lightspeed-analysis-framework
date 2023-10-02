@@ -1,4 +1,5 @@
 import re
+import os
 
 def filter_data(file):
     """Filter the necessary keys and event data from the raw data file
@@ -11,9 +12,11 @@ def filter_data(file):
     """
 
     input_file_name = file
-    output_file_name = "data/filtered_data.jsonl"
 
-    # input_file_name = file
+    output_folder = "data"
+    os.makedirs(output_folder, exist_ok=True)
+
+    output_file_name = "data/filtered_data.jsonl"
 
     # regex of unnecesasary keys
     message_id_pattern = r'"messageId":"([a-f0-9\-]+)",'
