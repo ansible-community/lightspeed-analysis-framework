@@ -23,7 +23,3 @@ print("segregating users...")
 users_folder = segregate_users_from_group(group_data_file_name)
 print("FINISHED!")
 print(f"files pulished inside: {users_folder}\n")
-
-
-# analysis part
-

@@ -1,5 +1,6 @@
 import os
 import re
+from code.sort_data import sort_file_data
 
 
 def segregate_users_from_group(file):
@@ -39,6 +40,12 @@ def segregate_users_from_group(file):
             for line in lines:
                 output_file.write(line)
             output_file.close()
+
+        # sort file
+        sort_file_data(output_file_name)
+
+        # remove the filtered file as the final file is the sorted file
+        os.remove(output_file_name)
 
     input_file.close()
 
