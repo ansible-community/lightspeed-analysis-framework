@@ -1,6 +1,6 @@
-from code.filter_data import filter_data
-from code.get_group_data import get_group_data
-from code.segregate_users import segregate_users_from_group
+from data_handling_code.filter_data import filter_data
+from data_handling_code.get_group_data import get_group_data
+from data_handling_code.segregate_users import segregate_users_from_group
 
 # create data files for analysis
 original_file = "all.jsonl"

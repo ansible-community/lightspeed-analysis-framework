@@ -1,6 +1,6 @@
 import os
 import re
-from code.sort_data import sort_file_data
+from data_handling_code.sort_data import sort_file_data
 
 
 def segregate_users_from_group(file):
