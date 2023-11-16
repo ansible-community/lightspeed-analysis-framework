@@ -5,7 +5,7 @@ This framework analyzes the user modification patterns after they have accpeted 
 ## How to use
 
 1. Place the the raw `.jsonl` file at the root of the project.
-2. Run `data_processing.py`. This will do the followings:
+2. Run `group_data_processing.py` (for extracting a user groups data) or `user_data_processing` (for extracting a particular user's data) based on the requirement. Before running this code, make sure to update the placeholders in the code files. Execution of the code will do the followings:
     * Create a `data` folder in the root.
     * Create filtered data files and place it inside `data/`.
     * Segregate users from the group and create individual data files for each user and place it inside `data/user_files/`.
