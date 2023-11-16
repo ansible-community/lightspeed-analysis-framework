@@ -12,7 +12,7 @@ print("FINISHED!")
 print(f"file pulished: {filtered_file_name}\n")
 
 # get user data
-group_to_analyze = "--user-id--"
+group_to_analyze = "<--user-id-->"
 print("getting user data...")
 group_data_file_name = get_user_data(filtered_file_name, group_to_analyze)
 print("FINISHED!")

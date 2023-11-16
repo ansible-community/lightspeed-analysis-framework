@@ -12,7 +12,7 @@ print("FINISHED!")
 print(f"file pulished: {filtered_file_name}\n")
 
 # get group data
-group_to_analyze = "ansible-sme"
+group_to_analyze = "<--group-name-->"
 print("getting group data...")
 group_data_file_name = get_group_data(filtered_file_name, group_to_analyze)
 print("FINISHED!")
