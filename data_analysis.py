@@ -5,9 +5,15 @@ from analysis_code.combine_items import combine_items
 print("starting analysis...")
 user_data_folder = "test/user_files"
 
-header = ["id", "suggestions_analyzed", "accepted_suggestion", "committed_suggestions", "fully_accepted", "major_edits", "minor_edits", "changed_key", "changed_value", "changed_module", "no_match", "deleted_after_accepting", "minor_edit_key_change", "minor_edit_value_change", "minor_edit_module_change"]
+output_csv_file = 'user_analysis.csv'
 
-with open('user_analysis.csv', 'w') as file:
+header = ["id", "suggestions_analyzed", "accepted_suggestion", 
+        "committed_suggestions", "fully_accepted", "major_edits", 
+        "minor_edits", "changed_key", "changed_value", "changed_module", 
+        "no_match", "deleted_after_accepting", "minor_edit_key_change", 
+        "minor_edit_value_change", "minor_edit_module_change"]
+
+with open(output_csv_file, 'w') as file:
     writer = csv.DictWriter(file, fieldnames=header)
     writer.writeheader()
 
