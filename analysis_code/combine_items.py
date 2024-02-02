@@ -2,8 +2,6 @@ import os
 import json
 import yaml
 from yaml import SafeLoader
-from difflib import SequenceMatcher, Differ
-from pprint import pprint
 from analysis_code.analyze_edits import check_edits
 
 def combine_items(user_data_folder, user_file):
@@ -12,110 +10,159 @@ def combine_items(user_data_folder, user_file):
 
     global count_committed_tasks
     global less_than_fifty
+    global more_than_fifty
     global full_hundred
     global changed_module
     global changed_key_part
     global changed_value_part
     global suggestion_errors
     global count_accepted_suggestions
+    global count_valid_suggestions_analyzed
+    global zero_match
+    global deleted_after_accepting
+    global minor_edit_key_change
+    global minor_edit_value_change
+    global minor_edit_module_change
 
     count_committed_tasks = 0
     count_accepted_suggestions = 0
+    count_valid_suggestions_analyzed = 0
     less_than_fifty = 0
+    more_than_fifty = 0
     full_hundred = 0
     changed_module = 0
     changed_key_part = 0
     changed_value_part = 0
     suggestion_errors = 0
+    zero_match = 0
+    deleted_after_accepting = 0
+    minor_edit_key_change = 0
+    minor_edit_value_change = 0
+    minor_edit_module_change = 0
 
-    def get_desired_ansible_task(model_suggestion, yaml_string, output_file):
+    def get_desired_ansible_task(model_suggestion, yaml_string, playbook_context, output_file):
 
         global count_committed_tasks
         global less_than_fifty
+        global more_than_fifty
         global full_hundred
         global changed_module
         global changed_key_part
         global changed_value_part
         global suggestion_errors
         global count_accepted_suggestions
+        global count_valid_suggestions_analyzed
+        global zero_match
+        global deleted_after_accepting
+        global minor_edit_key_change
+        global minor_edit_value_change
+        global minor_edit_module_change
+
 
         task_name = model_suggestion["name"]
 
         try:
-            python_dict = yaml.load(yaml_string, Loader=SafeLoader)
+            ansible_dict = yaml.load(yaml_string, Loader=SafeLoader)
         except:
-            python_dict = {}
+            ansible_dict = {}
         
-        desired_task = {}
+        final_user_edited_task = {}
 
-        if(python_dict is None):
+        if(ansible_dict is None):
             return
 
-        for item in python_dict:
+        for item in ansible_dict:
+
+            # a task has to be a dict
+            if(not isinstance(item, dict)):
+                continue
 
             if(len(model_suggestion.keys()) <= 1):
                 suggestion_errors += 1
                 count_accepted_suggestions -= 1
+                count_valid_suggestions_analyzed -= 1
                 continue
 
             if "tasks" not in item:
-                if("name" in item and item["name"] == task_name):
-                    desired_task = item
+                if(isinstance(item, dict) and "name" in item and item["name"] == task_name):
+                    final_user_edited_task = item
 
-                    result = check_edits(model_suggestion, desired_task)
-                    output_file.write(f"{json.dumps(result)}\n")
-                    # print(json.dumps(result))
+                    result = check_edits(model_suggestion, final_user_edited_task, playbook_context)
+                    print("done top")
+                    output_file.write(f"{json.dumps(result, default=str)}\n")
                     match_percentage = result["match_percentage"]
-                    # print(match_percentage)
 
                     if(match_percentage == 100):
                         full_hundred += 1
-                    elif(match_percentage < 50):
+                    elif(match_percentage >= 50 and match_percentage < 100):
+                        more_than_fifty += 1
+                    elif(match_percentage > 0 and match_percentage < 50):
                         less_than_fifty += 1
-                    
+                    elif(match_percentage == 0):
+                        zero_match += 1
 
                     module_edit = not result["same_module"]
                     key_edit = result["key_edit"]
                     value_edit = result["value_edit"]
+                    deleted_suggestion = result["deleted_after_accepting"]
                     if(module_edit):
                         changed_module += 1
-                    if (key_edit):
+                        if(match_percentage >= 50):
+                            minor_edit_module_change += 1
+                    if(key_edit):
                         changed_key_part += 1
-                    if (value_edit):
+                        if(match_percentage >= 50 and not module_edit):
+                            minor_edit_key_change += 1
+                    if(value_edit):
                         changed_value_part += 1
+                        if(match_percentage >= 50 and not module_edit):
+                            minor_edit_value_change += 1
+                    if(deleted_suggestion):
+                        deleted_after_accepting += 1
 
                     count_committed_tasks += 1
                 continue
 
-            
             tasks = item["tasks"]
             if not tasks:
                 continue
 
             for task in tasks:
-                if("name" in task and task["name"] == task_name):
-                    desired_task = task
+                if(isinstance(task, dict) and "name" in task and task["name"] == task_name):
+                    final_user_edited_task = task
 
-                    result = check_edits(model_suggestion, desired_task)
-                    output_file.write(f"{json.dumps(result)}\n")
-                    # print(json.dumps(result))
+                    result = check_edits(model_suggestion, final_user_edited_task, playbook_context)
+                    print("done bottom")
+                    output_file.write(f"{json.dumps(result, default=str)}\n")
                     match_percentage = result["match_percentage"]
-                    # print(match_percentage)
 
                     if(match_percentage == 100):
                         full_hundred += 1
-                    elif(match_percentage < 50):
+                    elif(match_percentage >= 50 and match_percentage < 100):
+                        more_than_fifty += 1
+                    elif(match_percentage > 0 and match_percentage < 50):
                         less_than_fifty += 1
+                    elif(match_percentage == 0):
+                        zero_match += 1
 
                     module_edit = not result["same_module"]
                     key_edit = result["key_edit"]
                     value_edit = result["value_edit"]
+                    deleted_suggestion = result["deleted_after_accepting"]
                     if(module_edit):
                         changed_module += 1
-                    if (key_edit):
+                        if(match_percentage >= 50):
+                            minor_edit_module_change += 1
+                    if(key_edit):
                         changed_key_part += 1
-                    if (value_edit):
+                        if(match_percentage >= 50 and not module_edit):
+                            minor_edit_key_change += 1
+                    if(value_edit):
                         changed_value_part += 1
+                        if(match_percentage >= 50 and not module_edit):
+                            minor_edit_value_change += 1
+                    if(deleted_suggestion):
+                        deleted_after_accepting += 1
 
                     count_committed_tasks += 1
                     continue
@@ -141,71 +188,78 @@ def combine_items(user_data_folder, user_file):
         line = json.loads(line.strip())
 
         # Check if the current line is an inlineSuggestionFeedback and the action is 0, i.e., accepted
-        if line["event"] == 'inlineSuggestionFeedback' and "action" in line["properties"] and line["properties"]["action"] == '0':
+        if line["event"] == 'inlineSuggestionFeedback' and "action" in line["properties"] and line["properties"]["action"]:
             if(i == 0):
                 continue
             
-            count_accepted_suggestions += 1
+            count_valid_suggestions_analyzed += 1
 
-            # Extract the previous line, current line, and next line
-            previous_line = json.loads(lines[i - 1].strip()) if i > 0 else json.loads("")
-            current_line = line
+            if line["properties"]["action"] == '0':
+                count_accepted_suggestions += 1
 
-            edit_line = {}
-            next_line = json.loads(lines[i + 1].strip()) if i < len(lines) - 1 else json.loads("null")
+                # Extract the previous line, current line, and next line
+                previous_line = json.loads(lines[i - 1].strip()) if i > 0 else json.loads("")
+                current_line = line
 
-            # previous line of accepted inlineSuggestion should be a completion event
-            if(previous_line["event"] == "inlineSuggestionFeedback"
-                or previous_line["event"] == "ansibleContentFeedback"):
-                count_accepted_suggestions -= 1
-                continue
+                edit_line = {}
+                next_line = json.loads(lines[i + 1].strip()) if i < len(lines) - 1 else json.loads("null")
 
-            if(next_line and next_line["event"] == "completion"
-                and next_line["properties"]["metadata"]["documentUri"] == previous_line["properties"]["metadata"]["documentUri"]):
-                edit_line = next_line
-            
-            elif(next_line and next_line["event"] == "ansibleContentFeedback"
-                and "documentUri" in next_line["properties"]):
-                if (next_line["properties"]["documentUri"] == previous_line["properties"]["metadata"]["documentUri"]):
-                    edit_line = next_line
-            
-            elif(next_line and next_line["event"] == "ansibleContentFeedback"
-                and "documentUri" not in next_line["properties"]):
-                if (next_line["properties"]["data"]["ansibleContent"]["documentUri"] == previous_line["properties"]["metadata"]["documentUri"]):
+                # previous line of accepted inlineSuggestion should be a completion event
+                if(previous_line["event"] == "inlineSuggestionFeedback"
+                    or previous_line["event"] == "ansibleContentFeedback"):
+                    count_accepted_suggestions -= 1
+                    count_valid_suggestions_analyzed -= 1
+                    continue
+
+                if(next_line and next_line["event"] == "completion"
+                    and next_line["properties"]["metadata"]
+                    and next_line["properties"]["metadata"]["documentUri"]
+                    and next_line["properties"]["metadata"]["documentUri"] == previous_line["properties"]["metadata"]["documentUri"]):
                     edit_line = next_line
                 
-            else:
-                for j in range(i, len(lines) - 1):
-                    new_line = json.loads(lines[j].strip())
-                    # print(j, new_line["event"], new_line["originalTimestamp"])
-                    if(new_line["event"] == "ansibleContentFeedback" 
-                        and "documentUri" in new_line["properties"]
-                        and new_line["properties"]["documentUri"] == previous_line["properties"]["metadata"]["documentUri"]):
-                        edit_line = new_line
-                        break
-                    elif(new_line["event"] == "completion" 
-                        and "documentUri" in new_line["properties"]["metadata"]
-                        and new_line["properties"]["metadata"]["documentUri"] == previous_line["properties"]["metadata"]["documentUri"]):
-                        edit_line = new_line
-                        break
-            
-            # Create a dictionary to store the extracted lines
-            extracted_data = {
-                "Suggestion": previous_line,
-                "Action": current_line,
-                "Edits": edit_line
-            }
-            
-            extracted_lines.append(extracted_data)
+                elif(next_line and next_line["event"] == "ansibleContentFeedback"
+                    and "documentUri" in next_line["properties"]):
+                    if (next_line["properties"]["documentUri"] == previous_line["properties"]["metadata"]["documentUri"]):
+                        edit_line = next_line
+                
+                elif(next_line and next_line["event"] == "ansibleContentFeedback"
+                    and "documentUri" not in next_line["properties"]):
+                    if (next_line["properties"]["data"]["ansibleContent"]["documentUri"] == previous_line["properties"]["metadata"]["documentUri"]):
+                        edit_line = next_line
+                    
+                else:
+                    for j in range(i, len(lines) - 1):
+                        new_line = json.loads(lines[j].strip())
+                        # print(j, new_line["event"], new_line["originalTimestamp"])
+                        if(new_line["event"] == "ansibleContentFeedback" 
+                            and "documentUri" in new_line["properties"]
+                            and new_line["properties"]["documentUri"] == previous_line["properties"]["metadata"]["documentUri"]):
+                            edit_line = new_line
+                            break
+                        elif(new_line["event"] == "completion" 
+                            and "documentUri" in new_line["properties"]["metadata"]
+                            and new_line["properties"]["metadata"]["documentUri"] == previous_line["properties"]["metadata"]["documentUri"]):
+                            edit_line = new_line
+                            break
+                
+                # Create a dictionary to store the extracted lines
+                extracted_data = {
+                    "Suggestion": previous_line,
+                    "Action": current_line,
+                    "Edits": edit_line
+                }
+                
+                extracted_lines.append(extracted_data)
 
 
     with open(output_file_name, "w") as output_file:
         for data in extracted_lines:
 
-            # get the task name for which the completion was triggered
+            # get the 'task name' and 'playbook context' for which the completion was triggered
             prompt = data["Suggestion"]["properties"]["request"]["prompt"]
-            task_name = prompt.split("- name: ")[-1]
-            # output_file.write("\nTask name:\n{}\n".format(task_name))
+            content = prompt.split("- name: ")
+            task_name = content.pop()
+            playbook_context = "- name: ".join(content).strip()
             
             # get the suggestion that was accepted
             prediction = "" 
@@ -229,7 +283,7 @@ def combine_items(user_data_folder, user_file):
                 if(data["Edits"]["event"] == 'completion'):
                     # if 'completion' event, file content will be in the 'prompt' key
                     yaml_string = data["Edits"]["properties"]["request"]["prompt"]
-                    get_desired_ansible_task(model_suggestion, yaml_string, output_file)
+                    get_desired_ansible_task(model_suggestion, yaml_string, playbook_context, output_file)
                     # output_file.write("Edits:\n{}\n".format(yaml_string))
 
                 elif(data["Edits"]["event"] == 'ansibleContentFeedback'):
@@ -237,33 +291,36 @@ def combine_items(user_data_folder, user_file):
                     if("content" not in data["Edits"]["properties"]):
                         suggestion_errors +=1
                         count_accepted_suggestions -=1
+                        count_valid_suggestions_analyzed -= 1
                         continue 
 
                     yaml_string = data["Edits"]["properties"]["content"]
-                    get_desired_ansible_task(model_suggestion, yaml_string, output_file)
+                    get_desired_ansible_task(model_suggestion, yaml_string, playbook_context, output_file)
                     # output_file.write("Edits:\n{}\n".format(yaml_string))
 
                 else:
                     pass
 
-            # output_file.write("---------------------------------------------------------------\n")  # Add a separator between matched sections
-
+    user_data = {}
 
     count_accepted_suggestions -= suggestion_errors
-
-    print(f"Suggestion errors: {suggestion_errors}")
-    print(f"Accepted suggestions): {count_accepted_suggestions}")
-    print(f"Committed suggestions): {count_committed_tasks}")
-    print(f"Uncommitted suggestions): {count_accepted_suggestions - count_committed_tasks}")
-    print(f"Commit percent: {round((count_committed_tasks/count_accepted_suggestions) * 100, 2)}%")
-
-    print(f"Fully accepted: {full_hundred}")
-    print(f"Majorly edited (> 50%) keeping the same module: {abs(less_than_fifty - changed_module)}")
-
-    print(f"Changed key part: {changed_key_part}")
-    print(f"Changed value part: {changed_value_part}")
-    print(f"Changed the module: {changed_module}")
+    count_valid_suggestions_analyzed -= suggestion_errors
+    
+    user_data["suggestions_analyzed"] = count_valid_suggestions_analyzed
+    user_data["accepted_suggestion"] = count_accepted_suggestions
+    user_data["committed_suggestions"] = count_committed_tasks
+    user_data["fully_accepted"] = full_hundred
+    user_data["major_edits"] = less_than_fifty
+    user_data["minor_edits"] = more_than_fifty
+    user_data["changed_key"] = changed_key_part
+    user_data["changed_value"] = changed_value_part
+    user_data["changed_module"] = changed_module
+    user_data["no_match"] = zero_match
+    user_data["deleted_after_accepting"] = deleted_after_accepting
+    user_data["minor_edit_key_change"] = minor_edit_key_change
+    user_data["minor_edit_value_change"] = minor_edit_value_change
+    user_data["minor_edit_module_change"] = minor_edit_module_change
 
     print(f"Extracted lines have been written to '{output_file_name}'.")
-    print("completed!")
-    print("\n")
+
+    return user_data
