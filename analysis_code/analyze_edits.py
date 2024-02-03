@@ -1,6 +1,6 @@
 from difflib import SequenceMatcher, Differ
 import yaml
-from utils import recursive_items, sort_nested_dict, type_cast_key_to_str
+from analysis_code.utils import recursive_items, sort_nested_dict, type_cast_key_to_str
 
 def check_edits(suggestion_task, user_task, playbook_context):
 
