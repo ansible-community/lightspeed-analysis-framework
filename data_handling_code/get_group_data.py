@@ -13,7 +13,10 @@ def get_group_data(file, group):
     input_file_name = file
     output_file_name = f"data/{group}_filtered.jsonl"
 
-    search_group_substring = group
+    if(group):
+        search_group_substring = group
+    else:
+        search_group_substring = r'"groups":[],'
 
     with open(input_file_name, "r") as input_file, open(output_file_name, "w") as output_file:
         for line in input_file:
