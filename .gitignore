@@ -1,3 +1,5 @@
 *.jsonl
+*.csv
 data/
 __pycache__
+.DS_Store
