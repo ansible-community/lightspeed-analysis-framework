@@ -1,9 +1,7 @@
 import os
-import csv
-from analysis_code.combine_items import combine_items
 
 print("starting analysis...")
-user_data_folder = "test/user_files/analysis"
+user_data_folder = "data/user_files/analysis"
 
 output_file = "data_dump.jsonl"
 

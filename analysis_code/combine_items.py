@@ -88,7 +88,6 @@ def combine_items(user_data_folder, user_file):
                     final_user_edited_task = item
 
                     result = check_edits(model_suggestion, final_user_edited_task, playbook_context)
-                    print("done top")
                     output_file.write(f"{json.dumps(result, default=str)}\n")
                     match_percentage = result["match_percentage"]
 
@@ -111,11 +110,11 @@ def combine_items(user_data_folder, user_file):
                             minor_edit_module_change += 1
                     if(key_edit):
                         changed_key_part += 1
-                        if(match_percentage >= 50 and not module_edit):
+                        if(match_percentage >= 50 and not module_edit and not value_edit):
                             minor_edit_key_change += 1
                     if(value_edit):
                         changed_value_part += 1
-                        if(match_percentage >= 50 and not module_edit):
+                        if(match_percentage >= 50 and not module_edit and not key_edit):
                             minor_edit_value_change += 1
                     if(deleted_suggestion):
                         deleted_after_accepting += 1
@@ -132,7 +131,6 @@ def combine_items(user_data_folder, user_file):
                     final_user_edited_task = task
 
                     result = check_edits(model_suggestion, final_user_edited_task, playbook_context)
-                    print("done bottom")
                     output_file.write(f"{json.dumps(result, default=str)}\n")
                     match_percentage = result["match_percentage"]
 
@@ -155,11 +153,11 @@ def combine_items(user_data_folder, user_file):
                             minor_edit_module_change += 1
                     if(key_edit):
                         changed_key_part += 1
-                        if(match_percentage >= 50 and not module_edit):
+                        if(match_percentage >= 50 and not module_edit and not value_edit):
                             minor_edit_key_change += 1
                     if(value_edit):
                         changed_value_part += 1
-                        if(match_percentage >= 50 and not module_edit):
+                        if(match_percentage >= 50 and not module_edit and not key_edit):
                             minor_edit_value_change += 1
                     if(deleted_suggestion):
                         deleted_after_accepting += 1
@@ -213,6 +211,7 @@ def combine_items(user_data_folder, user_file):
 
                 if(next_line and next_line["event"] == "completion"
                     and next_line["properties"]["metadata"]
+                    and "documentUri" in next_line["properties"]["metadata"]
                     and next_line["properties"]["metadata"]["documentUri"]
                     and next_line["properties"]["metadata"]["documentUri"] == previous_line["properties"]["metadata"]["documentUri"]):
                     edit_line = next_line

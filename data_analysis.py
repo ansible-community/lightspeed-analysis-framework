@@ -4,7 +4,7 @@ import csv
 from analysis_code.combine_items import combine_items
 
 print("starting analysis...")
-user_data_folder = "test/user_files"
+user_data_folder = "data/user_files"
 
 output_csv_file = 'user_analysis.csv'
 
