@@ -1,7 +1,6 @@
 import json
 input_file_name = "data/_filtered.jsonl"
 
-
 with open(input_file_name, "r") as input_file:
     lines = input_file.readlines()
 
