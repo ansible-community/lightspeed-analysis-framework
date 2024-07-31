@@ -13,4 +13,8 @@ This framework analyzes the user modification patterns after they have accepted 
 3. Run `data_analysis.py` to start the analysis of individual user files.
 _NOTE:  Make sure that `data/user_files` contains user files before running the analysis code_
 4. Analysis code will print info in the terminal output as well as create analysis files for individual users under `data/user_files/analysis/`.
-5. Additionally, to get the overall user edit statistics and dump all individual analysis files into a single file, corresponding Python codes lie in the `statistics_code` folder. Run them in the the end.
+
+### Additional statistics
+
+1. Additionally, to get the overall user edit statistics and dump all individual analysis files into a single file, corresponding Python codes lie in the `statistics_code` folder. Run them in the the end.
+2. There are some miscellaneous code present in the `misc_code` directory. You can run these as separately whenever required.
