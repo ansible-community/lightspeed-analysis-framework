@@ -8,7 +8,7 @@ user_data_folder = "data/user_files"
 
 output_csv_file = 'user_analysis.csv'
 
-header = ["id", "suggestions_analyzed", "accepted_suggestion", 
+header = ["id", "suggestions_analyzed", "accepted_suggestion", "rejected_suggestion", 
         "committed_suggestions", "fully_accepted", "major_edits", 
         "minor_edits", "changed_key", "changed_value", "changed_module", 
         "no_match", "deleted_after_accepting", "minor_edit_key_change", 

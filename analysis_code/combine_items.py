@@ -9,6 +9,7 @@ def combine_items(user_data_folder, user_file):
     print(f"starting analyzing {user_file}...")
 
     global count_committed_tasks
+    global count_rejected_tasks
     global less_than_fifty
     global more_than_fifty
     global full_hundred
@@ -25,6 +26,7 @@ def combine_items(user_data_folder, user_file):
     global minor_edit_module_change
 
     count_committed_tasks = 0
+    count_rejected_tasks = 0
     count_accepted_suggestions = 0
     count_valid_suggestions_analyzed = 0
     less_than_fifty = 0
@@ -43,6 +45,7 @@ def combine_items(user_data_folder, user_file):
     def get_desired_ansible_task(model_suggestion, yaml_string, playbook_context, output_file):
 
         global count_committed_tasks
+        global count_rejected_tasks
         global less_than_fifty
         global more_than_fifty
         global full_hundred
@@ -232,11 +235,13 @@ def combine_items(user_data_folder, user_file):
                         # print(j, new_line["event"], new_line["originalTimestamp"])
                         if(new_line["event"] == "ansibleContentFeedback" 
                             and "documentUri" in new_line["properties"]
+                            and "documentUri" in previous_line["properties"]["metadata"]
                             and new_line["properties"]["documentUri"] == previous_line["properties"]["metadata"]["documentUri"]):
                             edit_line = new_line
                             break
                         elif(new_line["event"] == "completion" 
                             and "documentUri" in new_line["properties"]["metadata"]
+                            and "documentUri" in previous_line["properties"]["metadata"]
                             and new_line["properties"]["metadata"]["documentUri"] == previous_line["properties"]["metadata"]["documentUri"]):
                             edit_line = new_line
                             break
@@ -250,9 +255,15 @@ def combine_items(user_data_folder, user_file):
                 
                 extracted_lines.append(extracted_data)
 
+            else:
+                count_rejected_tasks += 1
+
 
     with open(output_file_name, "w") as output_file:
         for data in extracted_lines:
+
+            if("request" not in data["Suggestion"]["properties"]):
+                continue
 
             # get the 'task name' and 'playbook context' for which the completion was triggered
             prompt = data["Suggestion"]["properties"]["request"]["prompt"]
@@ -307,6 +318,7 @@ def combine_items(user_data_folder, user_file):
     
     user_data["suggestions_analyzed"] = count_valid_suggestions_analyzed
     user_data["accepted_suggestion"] = count_accepted_suggestions
+    user_data["rejected_suggestion"] = count_rejected_tasks
     user_data["committed_suggestions"] = count_committed_tasks
     user_data["fully_accepted"] = full_hundred
     user_data["major_edits"] = less_than_fifty

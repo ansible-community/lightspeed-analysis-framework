@@ -11,6 +11,7 @@ print("Total users analyzed:", total_users)
 
 total_suggestions_analyzed = 0
 total_accepted_suggestions = 0
+total_rejected_suggestions = 0
 total_fully_accepted_suggestions = 0
 total_majorly_edited_suggestions = 0
 total_minorly_edited_suggestions = 0
@@ -27,6 +28,7 @@ module_edits_in_minor_changes = 0
 for user in data:
     total_suggestions_analyzed += int(user["suggestions_analyzed"])
     total_accepted_suggestions += int(user['committed_suggestions'])
+    total_rejected_suggestions += int(user["rejected_suggestion"])
     total_fully_accepted_suggestions += int(user['fully_accepted'])
     total_majorly_edited_suggestions += int(user['major_edits'])
     total_changed_key += int(user['changed_key'])
@@ -42,6 +44,7 @@ for user in data:
 
 print("Total suggestions analyzed:", total_suggestions_analyzed)
 print("Total accepted suggestions:", total_accepted_suggestions)
+print("Total rejected suggestions:", total_rejected_suggestions)
 print("\n")
 
 print("Total fully accepted suggestions:", total_fully_accepted_suggestions)
